@@ -133,23 +133,66 @@ def Exec( A, S ):
 """
 if __name__ == '__main__':
 
-  import random, sys
+  import random
+  import sys
+  import pandas as pd
+  import matplotlib.pyplot as plt
 
-  # Get sequence size
-  n = 10
-  if len( sys.argv ) > 1:
-    n = abs( int( sys.argv[ 1 ] ) )
+  sequenceLength = []
+  bubble = []
+  insertion = []
+  merge = []
+
+  #get step and stop
+  step = int(input("Write a integer that defines the step of the sequence\n"))
+  stop = int(input("Write a integer that defines the stop of the sequence\n"))
+
+  if ((step>0) & (stop>0) & ((stop%step)==0)):
+    sequencesLength = range(step, stop, step)
+  else:
+    print("Invalid step or stop values")
+    sys.exit()
   # end if
 
-  # Create a random sequence
-  S = [ random.randint( int(-1e5), int(1e5) ) for i in range( n ) ]
+  for s in sequencesLength:
+    sequence = [ random.randint( int(-1e5), int(1e5) ) for i in range( s ) ]
 
-  tb = Exec( Bubble, S )
-  ti = Exec( Insertion, S )
-  tm = Exec( Merge, S )
+    tb = Exec( Bubble, sequence )
+    ti = Exec( Insertion, sequence )
+    tm = Exec( Merge, sequence )
 
-  print( n, tb, ti, tm )
+    sequenceLength.append(s)
+    bubble.append(tb)
+    insertion.append(ti)
+    merge.append(tm)
 
+  data = {
+    "Length": sequenceLength,
+    "Bubble": bubble,
+    "Insertion": insertion,
+    "Merge": merge
+  }
+
+  df = pd.DataFrame(data)
+
+  print(df.dtypes)
+  print(df)
+
+  # Plot
+  plt.figure(figsize=(10, 6))
+  plt.plot(df["Length"], df["Bubble"], label="Bubble Sort")
+  plt.plot(df["Length"], df["Insertion"], label="Insertion Sort")
+  plt.plot(df["Length"], df["Merge"], label="Merge Sort")
+
+  # Labels and Title
+  plt.xlabel("Length")
+  plt.ylabel("Time (seconds)")
+  plt.title("Sorting Algorithm Performance")
+  plt.legend()
+  plt.grid(True)
+
+  # Show plot
+  plt.show()
 # end if
 
 ## eof - sorting.py
