@@ -1,4 +1,0 @@
-2
-2 relu
-1 sIgMoId
-random

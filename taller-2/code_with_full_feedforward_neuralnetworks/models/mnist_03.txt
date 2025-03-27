@@ -1,0 +1,6 @@
+784
+95 ReLU
+50 ReLU
+43 ReLU
+10 SoftMax
+random
