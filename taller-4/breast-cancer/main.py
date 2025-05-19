@@ -15,6 +15,7 @@ from PUJ_ML.ConfussionDebugger import ConfussionDebugger
 import pandas
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 import matplotlib.pyplot as plt
+from sklearn.linear_model import SGDClassifier
 
 '''
 '''
@@ -159,78 +160,77 @@ if __name__ == "__main__":
 
     # -- Fit model to train data
     if args.validation.lower( ) == 'mce':
-        opt.fit( D_tr, args.L1, args.L2, args.L, D_te, validation = 'mce' )
+        opt.fit( D_tr, D_te, validation = 'mce' )
     elif args.validation.lower( ) == 'loo':
-        opt.fit( D_tr, args.L1, args.L2, args.L, D_te, validation = 'loo' )
+        opt.fit( D_tr, D_te, validation = 'loo' )
     elif args.validation.lower( )[ : 5 ] == 'kfold':
         K = int( args.validation.lower( )[ 5 : ] )
-        opt.fit( D_tr, args.L1, args.L2, args.L, D_te, validation = 'kfold', K = K )
+        opt.fit( D_tr, D_te, validation = 'kfold', K = K )
     else:
         print( 'Invalid validation strategy.' )
         sys.exit( 1 )
     # end if
 
-    print( 'Final model: ' + str( m.m_P ) )
+    # X_tr = D_tr[ : , : D_tr.shape[ 1 ] - 1 ]
+    # y_tr = numpy.asmatrix( D_tr[ : , -1 ] ).T
+    # X_te = D_te[ : , : D_te.shape[ 1 ] - 1 ]
+    # y_te = numpy.asmatrix( D_te[ : , -1 ] ).T
+
+    # y_pred = m( X_te, True )
+    # y_pred = numpy.where( y_pred >= 1, 1, 0)
+    # y_true = numpy.where( y_te >= 1, 1, 0).ravel()
+
+    # Matriz de confusión
+    # cm = confusion_matrix(y_true, y_pred)
+
+    # disp = ConfusionMatrixDisplay(confusion_matrix=cm)
+    # disp.plot(cmap='Blues')
+    # plt.title("Confusion Matrix")
+    # plt.show()
+
 
     X_tr = D_tr[ : , : D_tr.shape[ 1 ] - 1 ]
     y_tr = numpy.asmatrix( D_tr[ : , -1 ] ).T
     X_te = D_te[ : , : D_te.shape[ 1 ] - 1 ]
     y_te = numpy.asmatrix( D_te[ : , -1 ] ).T
+    model = SGDClassifier(
+        loss='hinge',            # SVM loss
+        # penalty='elasticnet',    # Elastic Net regularization
+        # alpha=2,            # Regularization strength (like 1/C)
+        # l1_ratio=0.5,            # Mix between L1 (1.0) and L2 (0.0)
+        max_iter=args.epochs
+    ) 
 
-    y_pred = m( X_te, True )
-    y_pred = numpy.where( y_pred >= 1, 1, 0)
-    y_true = numpy.where( y_te >= 1, 1, 0).ravel()
+    model.fit( numpy.asarray( X_tr ), numpy.asarray( y_tr ).ravel() )
+    # Predict and evaluate
+    y_pred = model.predict( numpy.asarray( X_te ) )
+    y_pred = numpy.where( y_pred >= 1, 1, 0 )
+    y_te_adj = numpy.where( y_te >= 1, 1, 0 )
 
-    # Matriz de confusión
-    cm = confusion_matrix(y_true, y_pred)
+    K_te = Confussion( model, X_te, y_te )
+    sensibility = K_te[ 1 ]
+    specificity = K_te[ 2 ]
+    accuracy = K_te[ 3 ]
+    F1 = K_te[ 4 ]
+    print( 'SGDClassifier result' )
+    print( 'Sensibility: ', sensibility )
+    print( "Specificity: ", specificity )
+    print( "Accuracy: ", accuracy )
+    print( "F1: ", F1 )
+    print('Final model: ', model.coef_)
 
-    disp = ConfusionMatrixDisplay(confusion_matrix=cm)
-    disp.plot(cmap='Blues')
-    plt.title("Confusion Matrix")
-    plt.show()
-
-
-    # X_tr = D_tr[ : , : D_tr.shape[ 1 ] - 1 ]
-    # y_tr = numpy.asmatrix( D_tr[ : , -1 ] ).T
-    # X_te = D_te[ : , : D_te.shape[ 1 ] - 1 ]
-    # y_te = numpy.asmatrix( D_te[ : , -1 ] ).T
-    # model = SGDClassifier(
-    #     loss='hinge',            # SVM loss
-    #     penalty='elasticnet',    # Elastic Net regularization
-    #     alpha=2,            # Regularization strength (like 1/C)
-    #     l1_ratio=0.5,            # Mix between L1 (1.0) and L2 (0.0)
-    #     max_iter=args.epochs
-    # ) 
-
-    # model.fit( numpy.asarray( X_tr ), numpy.asarray( y_tr ).ravel() )
-    # # Predict and evaluate
-    # y_pred = model.predict( numpy.asarray( X_te ) )
-    # y_pred = numpy.where( y_pred >= 1, 1, 0 )
-    # y_te_adj = numpy.where( y_te >= 1, 1, 0 )
-
-    # K_te = Confussion( model, X_te, y_te )
-    # sensibility = K_te[ 1 ]
-    # specificity = K_te[ 2 ]
-    # accuracy = K_te[ 3 ]
-    # F1 = K_te[ 4 ]
-    # print( 'SGDClassifier result' )
-    # print( 'Sensibility: ', sensibility )
-    # print( "Specificity: ", specificity )
-    # print( "Accuracy: ", accuracy )
-    # print( "F1: ", F1 )
-
-    # K_te = Confussion( m, X_te, y_te )
-    # sensibility = K_te[ 1 ]
-    # specificity = K_te[ 2 ]
-    # accuracy = K_te[ 3 ]
-    # F1 = K_te[ 4 ]
-    # print( 'SVM result' )
-    # print( 'Sensibility: ', sensibility )
-    # print( "Specificity: ", specificity )
-    # print( "Accuracy: ", accuracy )
-    # print( "F1: ", F1 )
-
-    # print(model.coef_)
+    K_te = Confussion( m, X_te, y_te )
+    sensibility = K_te[ 1 ]
+    specificity = K_te[ 2 ]
+    accuracy = K_te[ 3 ]
+    F1 = K_te[ 4 ]
+    print( 'SVM result' )
+    print( 'Sensibility: ', sensibility )
+    print( "Specificity: ", specificity )
+    print( "Accuracy: ", accuracy )
+    print( "F1: ", F1 )
+    print( 'Final model: ' + str( m.m_P ) )
+    
 
 # end if
 # eof - main.py
