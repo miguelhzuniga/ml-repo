@@ -116,23 +116,25 @@ class Base:
   '''
   '''
   def _regularization( self, L1, L2, Derivate, L = 1 ):
-    assert abs(L1 + L2 - 1.0) < 1e-8, "L1 and L2 must sum to 1"
-
-    if Derivate:
-      r = self.m_P * ( float( 2 ) * L2 )
-      pi = numpy.where( self.m_P > 0 )[ 0 ]
-      ni = numpy.where( self.m_P < 0 )[ 0 ]
-      if pi.size > 0: r[ pi ] += L1
-      if ni.size > 0: r[ ni ] -= L1
-      return numpy.asmatrix( r * L )
-    
+    assert ( abs( L1 + L2 - 1.0 ) < 1e-8 ) | ( ( L1 + L2 ) < 1e-8 ), "L1 and L2 must sum to 1 or 0"
+    if( L1 + L2 ) < 1e-8:
+      return numpy.zeros(self.m_P.shape)
     else:
-      r = ( self.m_P ** 2 ) * L2
-      pi = numpy.where( self.m_P >= 0 )[ 0 ]
-      ni = numpy.where( self.m_P < 0 )[ 0 ]
-      if pi.size > 0: r[ pi ] += L1 * self.m_P[ pi ]
-      if ni.size > 0: r[ ni ] -= L1 * self.m_P[ pi ]
-      return numpy.asmatrix( r * L )
+      if Derivate:
+        r = self.m_P * ( float( 2 ) * L2 )
+        pi = numpy.where( self.m_P > 0 )[ 0 ]
+        ni = numpy.where( self.m_P < 0 )[ 0 ]
+        if pi.size > 0: r[ pi ] += L1
+        if ni.size > 0: r[ ni ] -= L1
+        return numpy.asarray( r * L )
+      
+      else:
+        r = ( self.m_P ** 2 ) * L2
+        pi = numpy.where( self.m_P >= 0 )[ 0 ]
+        ni = numpy.where( self.m_P < 0 )[ 0 ]
+        if pi.size > 0: r[ pi ] += L1 * self.m_P[ pi ]
+        if ni.size > 0: r[ ni ] -= L1 * self.m_P[ ni ]
+        return numpy.asarray( r * L )
   # end def
 # end class
 
