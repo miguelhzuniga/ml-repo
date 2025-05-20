@@ -69,7 +69,7 @@ class Linear( Base ):
     r = self._regularization( L1, L2 )
 
     return ( numpy.multiply( z, z ).mean( ), numpy.asmatrix( G ) + r )
-  # end def
+  #end def
 
   '''
   '''

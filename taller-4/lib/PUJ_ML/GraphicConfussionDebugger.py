@@ -62,21 +62,25 @@ class GraphicConfussionDebugger:
     # Initialize plots
     if len( self.m_AxX ) == 0:
       self.m_Fig, self.m_Ax = matplotlib.pyplot.subplots( )
-      self.m_LineJTr, = self.m_Ax.plot( [], [] )
-      self.m_LineAccTr, = self.m_Ax.plot( [], [] )
-      self.m_LineF1Tr, = self.m_Ax.plot( [], [] )
+      self.m_LineJTr, = self.m_Ax.plot([], [], label='Train Loss')
+      self.m_LineAccTr, = self.m_Ax.plot([], [], label='Train Accuracy')
+      self.m_LineF1Tr, = self.m_Ax.plot([], [], label='Train F1 Score')
+
       if has_te:
-        self.m_LineJTe, = self.m_Ax.plot( [], [] )
-        self.m_LineAccTe, = self.m_Ax.plot( [], [] )
-        self.m_LineF1Te, = self.m_Ax.plot( [], [] )
+        self.m_LineJTe, = self.m_Ax.plot([], [], label='Test Loss')
+        self.m_LineAccTe, = self.m_Ax.plot([], [], label='Test Accuracy')
+        self.m_LineF1Te, = self.m_Ax.plot([], [], label='Test F1 Score')
       # end if
-      self.m_Ax.set_xlim( 0, 1 )
-      self.m_Ax.set_ylim( 0, 1 )
-      self.m_Ax.set_xlabel( 'Epoch/iteration' )
-      self.m_Ax.set_ylabel( 'Cost/Loss' )
-      self.m_Ax.set_title( 'Cost/Loss evolution' )
-      matplotlib.pyplot.ion( ) 
-      matplotlib.pyplot.show( )
+
+      self.m_Ax.set_xlim(0, 1)
+      self.m_Ax.set_ylim(0, 1)
+      self.m_Ax.set_xlabel('Epoch/iteration')
+      self.m_Ax.set_ylabel('Metrics')
+      self.m_Ax.set_title('Training and Testing Metrics Evolution')
+      self.m_Ax.legend()
+
+      matplotlib.pyplot.ion()
+      matplotlib.pyplot.show()
     # end if
 
     stop = not ( t < self.m_MaxEpochs )

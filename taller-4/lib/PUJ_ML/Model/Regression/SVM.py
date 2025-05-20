@@ -28,21 +28,26 @@ class SVM( Linear ):
 
     '''
     '''
-    def _evaluate( self, X ):
-        return super( )._evaluate( X )
+    def _evaluate( self, X, threshold = False ):
+        return ( ( X @ self.m_P[ 1 : , 0 ] ) - self.m_P[ 0 , 0 ] ).T
     # end def
 
     '''
     '''
     def cost_gradient( self, X, y, L1, L2, L ):
-        z = self( X )
+        z = numpy.asarray( self( X ) )
+        y = numpy.asarray( y )
+        margin = ( y * z )
+        mask = ( margin < 1 ).ravel()
+
         J = self.cost( X, y, L1, L2, L )
-        oi = numpy.where( z < 1 )[ 0 ].tolist( )
+        regularization = self._regularization( L1, L2, True, L )
+        print(mask.shape)
 
         G = numpy.zeros( self.m_P.shape )
-        G[ 0 ] = ( y[ oi ] ).sum() / float( X.shape[ 0 ] )
-        G[ 1 : ] = numpy.multiply( X[ oi , : ], -y[ oi ] ).sum( axis = 0 ).T / float( X.shape[ 0 ] )
-        G = G + self._regularization( L1, L2, L )
+        G[ 0 ] = ( y[ mask, None ] ).sum() / float( X.shape[ 0 ] )
+        G[ 1 : ] = ( -y[ mask, None ].T @ X[ mask, : ] ).sum( axis = 0 ).T / float( X.shape[ 0 ] )
+        G += regularization
 
         return ( J, G )
     # end def
@@ -50,12 +55,13 @@ class SVM( Linear ):
     '''
     '''
     def cost( self, X, y, L1, L2, L ):
-        z = self( X )
-        # zi = numpy.where( y >= 1 )[ 0 ].tolist( )
-        oi = numpy.where( z < 1 )[ 0 ].tolist( )
-        
-        J = ( float( 1 ) - ( y[ oi ].T @ z[ oi , : ] ) ).sum( )
-        J += self._regularization( L1, L2, L ).sum()
+        z = numpy.asarray( self( X ) )
+        y = numpy.asarray( y )
+        margin = ( y * z )
+        mask = margin < 1 
+       
+        J = ( 1.0 - margin[ mask ] ).sum( )
+        J += self._regularization( L1, L2, False, L ).sum()
         J /= float( X.shape[ 0 ] )
 
         return J

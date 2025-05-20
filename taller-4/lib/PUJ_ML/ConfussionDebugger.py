@@ -60,8 +60,8 @@ class ConfussionDebugger:
       print( 
         'Epoch: ',  t,
         '\n',
-        'Train Cost: ', round( J_tr, 4 ), 
-        'Test Cost: ', round( J_te, 4 ),
+        'Train Loss: ', round( J_tr, 4 ), 
+        'Test Loss: ', round( J_te, 4 ),
         '\n',
         'Train Accuracy: ', round( acc_tr, 4 ),
         'Test Accuracy: ', round( acc_te, 4 ), 

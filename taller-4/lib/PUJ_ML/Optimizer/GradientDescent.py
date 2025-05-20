@@ -21,6 +21,8 @@ class GradientDescent( Base ):
   '''
   '''
   def _fit( self, X_tr, y_tr, X_te, y_te, batches ):
+    
+    J_tr = float( 'nan' )
 
     self.m_Model.init( )
     t = 0
@@ -29,14 +31,14 @@ class GradientDescent( Base ):
       t += 1
 
       for batch in batches:
-        J_tr, G = self.m_Model.cost_gradient( X_tr[ batch, : ], y_tr[ batch, : ], self.m_Lambda1, self.m_Lambda2 )
+        J_tr, G = self.m_Model.cost_gradient( X_tr[ batch, : ], y_tr[ batch, : ], self.m_Lambda1, self.m_Lambda2, self.m_L )
         self.m_Model -= G * self.m_Alpha
       # end for
 
       if not math.isnan( J_tr ) and not math.isinf( J_tr ):
         J_te = None
         if not X_te is None:
-          J_te = self.m_Model.cost( X_te, y_te )
+          J_te = self.m_Model.cost( X_te, y_te, self.m_Lambda1, self.m_Lambda2, self.m_L )
         # end if
 
         if not self.m_Debug is None:

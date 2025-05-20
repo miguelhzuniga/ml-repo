@@ -31,7 +31,7 @@ class Base:
 
   '''
   '''
-  def fit( self, D_tr, L1, L2, L, D_te = None, validation = 'mce', K = 5, batch_size = 0 ):
+  def fit( self, D_tr, D_te = None, validation = 'mce', K = 5, batch_size = 0 ):
 
     batches = []
     if validation.lower( ) != 'mce':
@@ -48,9 +48,9 @@ class Base:
           )
       # end if
       if validation.lower( ) == 'loo':
-        self._fit_loo( X_tr, y_tr, batches, L1, L2, L )
+        self._fit_loo( X_tr, y_tr, batches )
       elif validation.lower( ) == 'kfold':
-        self._fit_kfold( X_tr, y_tr, K, batches, L1, L2, L )
+        self._fit_kfold( X_tr, y_tr, K, batches )
       else:
         raise ValueError( 'Validation not valid "' + validation + '"' )
       # end if
@@ -92,7 +92,7 @@ class Base:
 
   '''
   '''
-  def _fit_loo( self, X, y, batches, L1, L2, L ):
+  def _fit_loo( self, X, y, batches ):
 
     M = X.shape[ 0 ]
     idx = [ i for i in range( M ) ]
@@ -105,7 +105,7 @@ class Base:
       print( '*** Leave-one-out: ' + str( m ) + '/' + str( M - 1 ) )
       self._fit( X_tr, y_tr, None, None, batches )
 
-      v += self.m_Model.cost( X[ m , : ], y[ m , : ], L1, L2, L )
+      v += self.m_Model.cost( X[ m , : ], y[ m , : ], self.m_Lambda1, self.m_Lambda2, self.m_L )
     # end for
     v /= float( M )
 
@@ -118,7 +118,7 @@ class Base:
 
   '''
   '''
-  def _fit_kfold( self, X, y, K, batches, L1, L2, L ):
+  def _fit_kfold( self, X, y, K, batches ):
 
     M = X.shape[ 0 ]
     N = math.ceil( M / K )
@@ -137,7 +137,7 @@ class Base:
       print( '*** Kfold (K=' + str( K ) + '): ' + str( k + 1 ) + '/' + str( K ) )
       self._fit( X_tr, y_tr, None, None, batches )
 
-      v += self.m_Model.cost( X[ idx[ k ] , : ], y[ idx[ k ] , : ], L1, L2, L )
+      v += self.m_Model.cost( X[ idx[ k ] , : ], y[ idx[ k ] , : ], self.m_Lambda1, self.m_Lambda2, self.m_L )
     # end for
     v /= float( M )
 
